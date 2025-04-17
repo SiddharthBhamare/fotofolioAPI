@@ -26,6 +26,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Expose port
+ENV ASPNETCORE_HTTP_PORTS=80
 EXPOSE 80
 
 # Start the app
