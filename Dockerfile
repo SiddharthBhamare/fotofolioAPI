@@ -1,35 +1,32 @@
 # Use the official .NET SDK image to build the application
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory inside the container
 WORKDIR /src
 
-# Copy the solution file into the container
-COPY FotofolioAPI.sln ./
+# Copy solution and project file
+COPY fotofolioAPI.sln ./
+COPY fotofolioAPI.csproj ./
 
-# Copy the project file into the container
-COPY FotofolioAPI/FotofolioAPI.csproj FotofolioAPI/
+# Restore the dependencies
+RUN dotnet restore "fotofolioAPI.csproj"
 
-# Restore the dependencies for the project
-RUN dotnet restore "FotofolioAPI/FotofolioAPI.csproj"
+# Copy everything else
+COPY . ./
 
-# Copy the rest of the application files into the container
-COPY . .
+# Build the application
+RUN dotnet publish "fotofolioAPI.csproj" -c Release -o /app/publish
 
-# Publish the application to the /app folder in the container
-RUN dotnet publish "FotofolioAPI/FotofolioAPI.csproj" -c Release -o /app
+# Use the runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
-# Set the base image to use for running the application (runtime image)
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
-
-# Set the working directory in the runtime image
 WORKDIR /app
 
-# Copy the published application from the build container
-COPY --from=build /app .
+# Copy published app
+COPY --from=build /app/publish .
 
-# Expose port 80 to allow traffic to the container
+# Expose port
 EXPOSE 80
 
-# Define the entry point for the application (run the API)
-ENTRYPOINT ["dotnet", "FotofolioAPI.dll"]
+# Start the app
+ENTRYPOINT ["dotnet", "fotofolioAPI.dll"]
