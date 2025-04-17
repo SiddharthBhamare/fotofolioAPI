@@ -1,0 +1,65 @@
+## Ignore build output and user-specific files
+
+# Build Folders (Debug, Release, etc.)
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code settings
+.vscode/
+
+# Rider IDE files
+.idea/
+*.sln.iml
+
+# Logs
+*.log
+
+# DotNet Watch temp
+**/tmp/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Test results
+TestResults/
+*.TestResults
+*.trx
+.vs/
+# Code coverage results
+coverage/
+*.coverage
+*.coveragexml
+
+# Publish output
+publish/
+out/
+
+# Npm packages (if using React or Angular frontends)
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Docker
+*.container
+docker-compose.override.yml
+
+# ReSharper files
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Others
+Thumbs.db
+Desktop.ini
+
+# Backup & restore folders
+.nuget/
+packages/
