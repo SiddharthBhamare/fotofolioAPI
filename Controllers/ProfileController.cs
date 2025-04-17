@@ -4,6 +4,7 @@ using fotofolioAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
+using System.Net;
 
 namespace fotofolioAPI.Controllers
 {
@@ -65,6 +66,10 @@ namespace fotofolioAPI.Controllers
 
             return Ok("Profile Created successfully.");
         }
-
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            return Ok("Connected : "+_config.GetConnectionString("DefaultConnection"));
+        }
     }
 }
