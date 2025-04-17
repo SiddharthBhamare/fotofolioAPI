@@ -14,7 +14,7 @@ namespace fotofolioAPI
             {
                 option.AddPolicy("fotofolio", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173").
+                    policy.WithOrigins(builder.Configuration["CorsOrigin"]).
                     AllowAnyHeader()
                     .AllowAnyMethod();
                 });
