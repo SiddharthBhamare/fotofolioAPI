@@ -6,20 +6,35 @@ namespace fotofolioAPI
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                Args = args,
+                ContentRootPath = Directory.GetCurrentDirectory()
+            });
+
+            // Load configuration from appsettings.json and environment variables
+            builder.Configuration
+                   .SetBasePath(Directory.GetCurrentDirectory())
+                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                   .AddEnvironmentVariables();
+
+            // Read CORS origins from environment/config (support multiple origins)
+            var corsOrigins = builder.Configuration["CorsOrigin"]?.Split(",") ?? new[] { "http://localhost:5173" };
 
             // Add services to the container.
             builder.Services.AddControllers();
-            builder.Services.AddCors(option =>
+
+            builder.Services.AddCors(options =>
             {
-                option.AddPolicy("fotofolio", policy =>
+                options.AddPolicy("fotofolio", policy =>
                 {
-                    policy.WithOrigins(builder.Configuration["CorsOrigin"]).
-                    AllowAnyHeader()
-                    .AllowAnyMethod();
+                    policy.WithOrigins(corsOrigins)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
                 });
             });
-            // Add Swagger with metadata
+
+            // Swagger setup
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -55,18 +70,27 @@ namespace fotofolioAPI
                 });
             });
 
-
             var app = builder.Build();
+
+            // CORS
             app.UseCors("fotofolio");
 
+            // Swagger UI
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            app.UseHttpsRedirection();
+            // Middleware & Pipeline
+            app.UseHttpsRedirection(); // will auto fallback if HTTPS isn't configured
             app.UseMiddleware<ApiKeyMiddleware>();
             app.UseAuthorization();
 
             app.MapControllers();
+
+            // Optional: Debug current values (remove in prod)
+            Console.WriteLine("Loaded CORS origins: " + string.Join(", ", corsOrigins));
+            Console.WriteLine("Loaded API key: " + builder.Configuration["ApiKey"]);
+            Console.WriteLine("DB Connection: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+
             app.Run();
         }
     }
