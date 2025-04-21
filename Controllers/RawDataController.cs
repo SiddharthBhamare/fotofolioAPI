@@ -16,7 +16,7 @@ namespace fotofolioAPI.Controllers
             _config = config;
         }
         [HttpPost("upload")]
-        public async Task<IActionResult> Upload([FromForm] UploadRequest? UploadRequest)
+        public async Task<IActionResult> Upload(UploadRequest? UploadRequest)
         {
             byte[] imageData = null;
 
@@ -44,7 +44,25 @@ namespace fotofolioAPI.Controllers
 
             return Ok("Category uploaded successfully.");
         }
+        [HttpGet("ShowMetdaData")]
+        public async Task<IActionResult> ShowMetdaData()
+        {
+            using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
 
+            var sql = @"SELECT id, title, category, youtubeurl FROM public.Rawdata";
+
+            var result = await connection.QueryAsync(sql);
+
+            var response = result.Select(r => new
+            {
+                Id = r.id,
+                Title = r.title,
+                Category = r.category,
+                YoutubeURL = r.youtubeurl
+            });
+
+            return Ok(response);
+        }
         [HttpGet("getall")]
         public async Task<IActionResult> GetAll()
         {
@@ -66,7 +84,7 @@ namespace fotofolioAPI.Controllers
             return Ok(response);
         }
 
-        [HttpGet("getAllids")]
+        [HttpGet("getAllIds")]
         public async Task<IActionResult> GetAllIds()
         {
             using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
@@ -82,7 +100,7 @@ namespace fotofolioAPI.Controllers
 
             return Ok(response);
         }
-        [HttpDelete]
+        [HttpDelete("DeleteByIds")]
         public async Task<IActionResult> Delete([FromBody] List<Guid> ids)
         {
             if (ids == null || !ids.Any())

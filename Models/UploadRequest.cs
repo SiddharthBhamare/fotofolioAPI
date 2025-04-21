@@ -4,17 +4,13 @@ namespace fotofolioAPI.Models
 {
     public class UploadRequest
     {
-        [FromForm]
         public IFormFile? Image { get; set; }
 
-        [FromForm]
-        public string? Title { get; set; }
+        public string? Title { get; set; } = string.Empty;
 
-        [FromForm]
         public string Category { get; set; }
 
-        [FromForm]
-        public string? YouTubeLink { get; set; }
+        public string? YouTubeLink { get; set; } = string.Empty;
     }
 
 }

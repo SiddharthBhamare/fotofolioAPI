@@ -1,10 +1,7 @@
 ﻿using Dapper;
-using fotofolioAPI.Entities;
 using fotofolioAPI.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using System.Net;
 
 namespace fotofolioAPI.Controllers
 {
@@ -22,7 +19,7 @@ namespace fotofolioAPI.Controllers
         {
             using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
 
-            var sql = @"SELECT id, profilepicture, email, bio, contactno FROM public.profile order by id desc";
+            var sql = @"SELECT id, profilepicture, email, bio, contactno FROM public.profile order by id desc limit 1";
 
             var result = await connection.QueryAsync(sql);
 
@@ -38,8 +35,11 @@ namespace fotofolioAPI.Controllers
         }
 
         [HttpPost("Insert")]
-        public async Task<IActionResult> Insert([FromForm] Profile? profile)
+        public async Task<IActionResult> Insert(Profile? profile)
         {
+            if (profile == null)
+                return BadRequest("Profile is null.");
+
             byte[] imageData = null;
 
             if (profile.ProfilePicture != null)
@@ -49,27 +49,25 @@ namespace fotofolioAPI.Controllers
                 imageData = ms.ToArray();
             }
 
-
-
             using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
-            var sql = @"INSERT INTO public.profile (profilepicture, email, bio, contactno)
-            VALUES (@ProfilePicture, @Email, @Bio, @ContactNo)";
+            var sql = @"
+        DELETE FROM public.profile;
 
-            var Data = new 
+        INSERT INTO public.profile (profilepicture, email, bio, contactno)
+        VALUES (@ProfilePicture, @Email, @Bio, @ContactNo);";
+
+            var data = new
             {
                 ProfilePicture = imageData,
-                Bio = profile.Bio, 
+                Bio = profile.Bio,
                 ContactNo = profile.ContactNo,
                 Email = profile.Email
             };
-            await connection.ExecuteAsync(sql, Data);
 
-            return Ok("Profile Created successfully.");
+            await connection.ExecuteAsync(sql, data);
+
+            return Ok("Profile created successfully.");
         }
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            return Ok("Connected : "+_config.GetConnectionString("DefaultConnection"));
-        }
+
     }
 }
