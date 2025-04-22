@@ -44,6 +44,40 @@ namespace fotofolioAPI.Controllers
 
             return Ok("Category uploaded successfully.");
         }
+        [HttpPost("UploadByCategory")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadByCategory(MultipleUploadRequest uploadRequest)
+        {
+            if (uploadRequest?.Images == null || !uploadRequest.Images.Any())
+            {
+                return BadRequest("No images uploaded.");
+            }
+
+            using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
+            var sql = @"INSERT INTO public.Rawdata (title, category, image, youtubeurl)
+                VALUES (@Title, @Category, @Image, @YoutubeURL)";
+
+            foreach (var image in uploadRequest.Images)
+            {
+                using var ms = new MemoryStream();
+                await image.CopyToAsync(ms);
+                var imageData = ms.ToArray();
+
+                var genericTitle = $"{uploadRequest.Category}_{DateTime.Now:yyyyMMdd_HHmmssfff}";
+
+                var data = new RawData
+                {
+                    Title = genericTitle,
+                    Category = uploadRequest.Category,
+                    Image = imageData,
+                };
+
+                await connection.ExecuteAsync(sql, data);
+            }
+
+            return Ok("Images uploaded successfully for the category.");
+        }
+
         [HttpGet("ShowMetdaData")]
         public async Task<IActionResult> ShowMetdaData()
         {

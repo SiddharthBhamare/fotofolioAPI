@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace fotofolioAPI.Models
 {
@@ -12,5 +12,10 @@ namespace fotofolioAPI.Models
 
         public string? YouTubeLink { get; set; } = string.Empty;
     }
-
+    public class MultipleUploadRequest
+    {
+        [Required]
+        public IList<IFormFile> Images { get; set; }  // Changed from single image to list
+        public string Category { get; set; }
+    }
 }
